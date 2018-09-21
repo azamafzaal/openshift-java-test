@@ -4,13 +4,17 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,7 +38,7 @@ public class PersonController {
 	}
 
 	@PostMapping(value = "/persons")
-	public Person saveOne(@RequestBody Person person) {
+	public Person saveOne(@Valid @RequestBody Person person) {
 		LOG.info("Saving one person entry");
 		return this.personRepository.save(person);
 	}
@@ -44,6 +48,15 @@ public class PersonController {
 		LOG.info("Deleting one person entry");
 		this.personRepository.deleteById(id);
 		return this.personRepository.findAll();
+	}
+	
+	@PutMapping(value = "/persons/{id}")
+	public Person updateOne(@PathVariable(value = "id") Long id, @Valid @RequestBody Person person) {
+		Optional<Person> optional = this.personRepository.findById(id);
+		Person originalPerson = optional.get();
+		originalPerson.setFirstName(person.getFirstName());
+		originalPerson.setLastName(person.getLastName());
+		return this.personRepository.save(originalPerson);
 	}
 
 }
